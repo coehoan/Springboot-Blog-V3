@@ -1,13 +1,11 @@
 package site.metacoding.blogv3.service;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +39,10 @@ public class PostService {
     public void 게시글쓰기(PostWriteReqDto postWriteReqDto, User principal) {
 
         // 1. UUID로 파일 쓰고 경로 리턴받기
-        String thumnail = UtilFileUpload.write(uploadFolder, postWriteReqDto.getThumnailFile());
+        String thumnail = null;
+        if (!postWriteReqDto.getThumnailFile().isEmpty()) {
+            thumnail = UtilFileUpload.write(uploadFolder, postWriteReqDto.getThumnailFile());
+        }
 
         // 이 방식으로 사용하면 없는 카테고리id로 공격당할 수 있음
         // Category category = new Category();
@@ -61,9 +62,17 @@ public class PostService {
         // postWriteReqDto.getTitle(), postWriteReqDto.getContent(), thumnail);
     }
 
-    public PostRespDto 게시글목록보기(Integer userId) {
+    public PostRespDto 게시글목록보기(Integer userId, Pageable pageable) {
+
         List<Category> categoriesEntity = categoryRepository.findByUserId(userId);
-        List<Post> postsEntity = postRepository.findByUserId(userId);
+        Page<Post> postsEntity = postRepository.findByUserId(userId, pageable);
+        PostRespDto postRespDto = new PostRespDto(postsEntity, categoriesEntity);
+        return postRespDto;
+    }
+
+    public PostRespDto 카테고리별게시글보기(Integer userId, Integer categoryId, Pageable pageable) {
+        List<Category> categoriesEntity = categoryRepository.findByUserId(userId);
+        Page<Post> postsEntity = postRepository.findByUserIdAndCategoryId(userId, categoryId, pageable);
         PostRespDto postRespDto = new PostRespDto(postsEntity, categoriesEntity);
         return postRespDto;
     }
