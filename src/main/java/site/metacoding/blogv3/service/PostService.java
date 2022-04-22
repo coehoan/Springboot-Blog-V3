@@ -1,5 +1,6 @@
 package site.metacoding.blogv3.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,14 +67,35 @@ public class PostService {
 
         List<Category> categoriesEntity = categoryRepository.findByUserId(userId);
         Page<Post> postsEntity = postRepository.findByUserId(userId, pageable);
-        PostRespDto postRespDto = new PostRespDto(postsEntity, categoriesEntity);
+
+        List<Integer> pageNumbers = new ArrayList<>();
+        for (int i = 0; i < postsEntity.getTotalPages(); i++) {
+            pageNumbers.add(i);
+        }
+        PostRespDto postRespDto = new PostRespDto(
+                postsEntity,
+                categoriesEntity,
+                userId,
+                postsEntity.getNumber() - 1,
+                postsEntity.getNumber() + 1,
+                pageNumbers);
         return postRespDto;
     }
 
     public PostRespDto 카테고리별게시글보기(Integer userId, Integer categoryId, Pageable pageable) {
         List<Category> categoriesEntity = categoryRepository.findByUserId(userId);
         Page<Post> postsEntity = postRepository.findByUserIdAndCategoryId(userId, categoryId, pageable);
-        PostRespDto postRespDto = new PostRespDto(postsEntity, categoriesEntity);
+        List<Integer> pageNumbers = new ArrayList<>();
+        for (int i = 0; i < postsEntity.getTotalPages(); i++) {
+            pageNumbers.add(i);
+        }
+        PostRespDto postRespDto = new PostRespDto(
+                postsEntity,
+                categoriesEntity,
+                userId,
+                postsEntity.getNumber() - 1,
+                postsEntity.getNumber() + 1,
+                pageNumbers);
         return postRespDto;
     }
 }
