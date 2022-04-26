@@ -2,6 +2,7 @@
 
 <div class="container">
     <div class="d-flex justify-content-end my_mb_sm_1">
+
         <a href="/s/post/write-form" class="my_atag_none">
             <div class="my_icon_rounded_btn d-flex justify-content-center align-items-center"><i
                     class="fa-solid fa-pencil"></i></div>
@@ -9,36 +10,46 @@
     </div>
 
     <div class="my_post_list">
+
         {{#postRespDto.posts.content}}
         <div class="my_post_list_item">
             <div class="my_post_list_item_left">
-
                 {{#thumnail}}
                 <img src="/upload/{{thumnail}}" width="100%" height="100%">
                 {{/thumnail}}
                 {{^thumnail}}
-                <div class="my_fakeimg"></div>
+                <div class="my_fakeimg"> </div>
                 {{/thumnail}}
-
             </div>
             <div class="my_post_list_item_right my_ellipsis">
                 <div class="my_text_title my_ellipsis">{{title}}
                 </div>
-                <div class="my_text_body_sm">{{getFormatCreateDate}}</div>
+                <div class="my_text_body_sm">{{formatCreateDate}}</div>
                 <div class="my_mt_md_1">
-                    <a href="/user/{{user.id}}/post/{{id}}" class="my_success_btn">Read More</a>
+                    <a href="/post/{{id}}" class="my_success_btn">Read More</a>
                 </div>
             </div>
         </div>
         {{/postRespDto.posts.content}}
 
-        <div class="my_paging">
 
-            <a href="/user/{{postRespDto.userId}}/post?page={{postRespDto.prev}}">이전</a>
+        <div class="my_paging d-flex justify-content-center align-items-center my_mb_lg_1">
+
+            <a class="my_atag_none my_mr_sm_1" href="/user/{{postRespDto.userId}}/post?page={{postRespDto.prev}}">
+                <i class="fa-solid fa-angle-left"></i>
+            </a>
+
             {{#postRespDto.pageNumbers}}
-            <a href="/user/{{postRespDto.userId}}/post?page={{.}}">{{.}}</a>
+            <a class="my_atag_none" href="/user/{{postRespDto.userId}}/post?page={{.}}">
+                <div class="my_paging_number_box my_mr_sm_1">
+                    {{.}}
+                </div>
+            </a>
             {{/postRespDto.pageNumbers}}
-            <a href="/user/{{postRespDto.userId}}/post?page={{postRespDto.next}}">다음</a>
+
+            <a class="my_atag_none my_ml_sm_1" href="/user/{{postRespDto.userId}}/post?page={{postRespDto.next}}">
+                <i class="fa-solid fa-angle-right"></i>
+            </a>
 
         </div>
     </div>

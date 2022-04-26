@@ -24,6 +24,14 @@ import site.metacoding.blogv3.web.dto.post.PostWriteReqDto;
 public class PostController {
     private final PostService postService;
 
+    @GetMapping("/post/{postId}")
+    public String detail(Model model, @AuthenticationPrincipal LoginUser loginUser) {
+
+        // postService.게시글상세보기();
+
+        return "/post/detail";
+    }
+
     @GetMapping("/s/post/write-form")
     public String writeForm(@AuthenticationPrincipal LoginUser loginUser, Model model) {
         List<Category> categories = postService.게시글쓰기화면(loginUser.getUser());
