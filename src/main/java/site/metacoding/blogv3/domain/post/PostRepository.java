@@ -17,6 +17,8 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     Page<Post> findByUserIdAndCategoryId(@Param("userId") Integer userId, @Param("categoryId") Integer categoryId,
             Pageable pageable);
 
+    @Query(value = "SELECT * FROM post ORDER BY id DESC LIMIT 0,9", nativeQuery = true)
+    List<Post> mFindByPopular();
     // @Modifying // INSERT, UPDATE, DELETE
     // @Query(value = "INSERT INTO post(categoryId, title, content, userId,
     // thumnail, createDate, updateDate) VALUES(:categoryId, :title, :content,
