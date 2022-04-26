@@ -35,6 +35,16 @@ public class PostService {
         return categoryRepository.findByUserId(principal.getId());
     }
 
+    public Post 게시글상세보기(Integer id) {
+        Optional<Post> postOp = postRepository.findById(id);
+
+        if (postOp.isPresent()) {
+            return postOp.get();
+        } else {
+            throw new CustomException("게시글을 찾을 수 없습니다.");
+        }
+    }
+
     // 하나의 서비스는 여러가지 일을 한 번에 처리한다. (여러가지 일이 하나의 트랜잭션이다.)
     @Transactional
     public void 게시글쓰기(PostWriteReqDto postWriteReqDto, User principal) {
