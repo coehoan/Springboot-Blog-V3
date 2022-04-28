@@ -43,6 +43,10 @@ public class PostService {
     private final VisitRepository visitRepository;
     private final UserRepository userRepository;
 
+    public void 게시글삭제(Integer id) {
+        postRepository.deleteById(id);
+    }
+
     public List<Category> 게시글쓰기화면(User principal) {
         return categoryRepository.findByUserId(principal.getId());
     }
