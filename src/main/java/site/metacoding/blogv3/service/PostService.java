@@ -114,7 +114,8 @@ public class PostService {
                 pageOwnerId,
                 postsEntity.getNumber() - 1,
                 postsEntity.getNumber() + 1,
-                pageNumbers);
+                pageNumbers,
+                0L);
 
         // 방문자 카운트 증가
         Optional<User> pageOwnerOp = userRepository.findById(pageOwnerId);
@@ -123,6 +124,9 @@ public class PostService {
             Optional<Visit> visitOp = visitRepository.findById(pageOwnerEntity.getId());
             if (visitOp.isPresent()) {
                 Visit visitEntity = visitOp.get();
+                // Dto에 방문자수 담기(request에서 ip주소 받아서 동일하면 증가 안시키는 로직 필요함)
+                postRespDto.setTotalCount(visitEntity.getTotalCount());
+
                 Long totalCount = visitEntity.getTotalCount();
                 visitEntity.setTotalCount(totalCount + 1);
             } else {
@@ -147,7 +151,26 @@ public class PostService {
                 pageOwnerId,
                 postsEntity.getNumber() - 1,
                 postsEntity.getNumber() + 1,
-                pageNumbers);
+                pageNumbers,
+                0L);
+        // 방문자 카운트 증가
+        Optional<User> pageOwnerOp = userRepository.findById(pageOwnerId);
+        if (pageOwnerOp.isPresent()) {
+            User pageOwnerEntity = pageOwnerOp.get();
+            Optional<Visit> visitOp = visitRepository.findById(pageOwnerEntity.getId());
+            if (visitOp.isPresent()) {
+                Visit visitEntity = visitOp.get();
+                // Dto에 방문자수 담기(request에서 ip주소 받아서 동일하면 증가 안시키는 로직 필요함)
+                postRespDto.setTotalCount(visitEntity.getTotalCount());
+
+                Long totalCount = visitEntity.getTotalCount();
+                visitEntity.setTotalCount(totalCount + 1);
+            } else {
+                log.error("심각한 오류 발생", "회원가입할때 Visit이 안만들어지는 오류 발생");
+                throw new CustomException("일시적 문제가 생겼습니다. 관리자에게 문의해주세요.");
+            }
+        } else
+            throw new CustomException("없는 블로그입니다.");
         return postRespDto;
     }
 }
