@@ -24,6 +24,7 @@ import site.metacoding.blogv3.domain.visit.Visit;
 import site.metacoding.blogv3.domain.visit.VisitRepository;
 import site.metacoding.blogv3.handler.ex.CustomException;
 import site.metacoding.blogv3.util.UtilFileUpload;
+import site.metacoding.blogv3.web.dto.post.PostDetailRespDto;
 import site.metacoding.blogv3.web.dto.post.PostRespDto;
 import site.metacoding.blogv3.web.dto.post.PostWriteReqDto;
 
@@ -43,8 +44,25 @@ public class PostService {
     private final VisitRepository visitRepository;
     private final UserRepository userRepository;
 
-    public void 게시글삭제(Integer id) {
-        postRepository.deleteById(id);
+    @Transactional
+    public void 게시글삭제(Integer id, User principal) {
+
+        Optional<Post> postOp = postRepository.findById(id);
+
+        if (postOp.isPresent()) {
+            Post postEntity = postOp.get();
+
+            // 권한 체크
+            if (principal.getId() == postEntity.getUser().getId()) {
+
+                postRepository.deleteById(id);
+            } else {
+                throw new CustomException("삭제 권한이 없습니다");
+            }
+        } else {
+            throw new CustomException("해당 게시글이 존재하지 않습니다");
+        }
+
     }
 
     public List<Category> 게시글쓰기화면(User principal) {
@@ -52,11 +70,17 @@ public class PostService {
     }
 
     @Transactional
-    public Post 게시글상세보기(Integer id) {
+    public PostDetailRespDto 게시글상세보기(Integer id) {
+
+        PostDetailRespDto postDetailRespDto = new PostDetailRespDto();
+
         Optional<Post> postOp = postRepository.findById(id);
 
         if (postOp.isPresent()) {
             Post postEntity = postOp.get();
+
+            postDetailRespDto.setPost(postEntity);
+            postDetailRespDto.setPageOwner(false);
 
             // 방문자 카운트 증가
             Optional<Visit> visitOp = visitRepository.findById(postEntity.getUser().getId());
@@ -68,7 +92,47 @@ public class PostService {
                 log.error("심각한 오류 발생", "회원가입할때 Visit이 안만들어지는 오류 발생");
                 throw new CustomException("일시적 문제가 생겼습니다. 관리자에게 문의해주세요.");
             }
-            return postEntity;
+            return postDetailRespDto;
+        } else {
+            throw new CustomException("게시글을 찾을 수 없습니다.");
+        }
+    }
+
+    @Transactional
+    public PostDetailRespDto 게시글상세보기(Integer id, User principal) {
+
+        PostDetailRespDto postDetailRespDto = new PostDetailRespDto();
+        // 해당 게시글 주인 id
+        Integer pageOwnerId = null;
+        // 로그인한 사용자의 id
+        Integer loginUserId = principal.getId();
+
+        Optional<Post> postOp = postRepository.findById(id);
+
+        if (postOp.isPresent()) {
+            Post postEntity = postOp.get();
+
+            postDetailRespDto.setPost(postEntity);
+
+            // 두 값을 비교해서 isPageOwner에 true,false
+            pageOwnerId = postEntity.getUser().getId();
+            if (pageOwnerId == loginUserId) {
+                postDetailRespDto.setPageOwner(true);
+            } else {
+                postDetailRespDto.setPageOwner(false);
+            }
+
+            // 방문자 카운트 증가
+            Optional<Visit> visitOp = visitRepository.findById(postEntity.getUser().getId());
+            if (visitOp.isPresent()) {
+                Visit visitEntity = visitOp.get();
+                Long totalCount = visitEntity.getTotalCount();
+                visitEntity.setTotalCount(totalCount + 1);
+            } else {
+                log.error("심각한 오류 발생", "회원가입할때 Visit이 안만들어지는 오류 발생");
+                throw new CustomException("일시적 문제가 생겼습니다. 관리자에게 문의해주세요.");
+            }
+            return postDetailRespDto;
         } else {
             throw new CustomException("게시글을 찾을 수 없습니다.");
         }

@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import lombok.RequiredArgsConstructor;
 import site.metacoding.blogv3.config.auth.LoginUser;
 import site.metacoding.blogv3.domain.category.Category;
-import site.metacoding.blogv3.domain.post.Post;
+import site.metacoding.blogv3.domain.user.User;
 import site.metacoding.blogv3.handler.ex.CustomException;
 import site.metacoding.blogv3.service.PostService;
+import site.metacoding.blogv3.web.dto.post.PostDetailRespDto;
 import site.metacoding.blogv3.web.dto.post.PostRespDto;
 import site.metacoding.blogv3.web.dto.post.PostWriteReqDto;
 
@@ -30,23 +30,28 @@ public class PostController {
     private final PostService postService;
 
     @DeleteMapping("/s/api/post/{id}/delete")
-    public ResponseEntity<?> delete(@PathVariable Integer id, @AuthenticationPrincipal LoginUser loginUser) {
+    public ResponseEntity<?> postDelete(@PathVariable Integer id, @AuthenticationPrincipal LoginUser loginUser) {
 
-        Post postEntity = postService.게시글상세보기(id);
+        User principal = loginUser.getUser();
 
-        if (postEntity.getUser().getId() == loginUser.getUser().getId()) {
-            postService.게시글삭제(id);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } else {
-            throw new CustomException("권한이 없습니다.");
-        }
+        postService.게시글삭제(id, principal);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/post/{id}")
     public String detail(@PathVariable Integer id, Model model, @AuthenticationPrincipal LoginUser loginUser) {
 
-        Post postEntity = postService.게시글상세보기(id);
-        model.addAttribute("post", postEntity);
+        PostDetailRespDto postDetailRespDto = null;
+
+        if (loginUser == null) {
+            postDetailRespDto = postService.게시글상세보기(id);
+
+        } else {
+            postDetailRespDto = postService.게시글상세보기(id, loginUser.getUser());
+
+        }
+        model.addAttribute("data", postDetailRespDto);
 
         return "/post/detail";
     }
